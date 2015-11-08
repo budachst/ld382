@@ -62,3 +62,10 @@ The short variant utilizes the last saved values inside the server process and t
 - sat at end of transition in range from 0 to 100
 - int at end of transition in range from 0 to 100
 - duration transition time in seconds
+
+#### (e) run an effect
+Effects are more complex transitions, which are computed by the server on it's own and on demand. Effects are identified by their name, e.g. 'fire' and have a duration, for which the effect should be run. The command block looks like this:
+"[e|E],name,duration", where
+- e|E indicates the operation
+- name indicates the name of the effect
+- duration
