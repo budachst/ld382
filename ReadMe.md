@@ -23,6 +23,7 @@ There are currently four operations, that can be send to the server process. Eac
 (r) perform a single RGBW set
 (t) perform a transition
 (e) run an effect that is built-in into the ld382a.py script
+(g) query current saved RGBW and HSI values
 
 #### (s) perform single HSI set
 To set a single HSI value on the LD device use this command block:
@@ -69,3 +70,9 @@ Effects are more complex transitions, which are computed by the server on it's o
 - e|E indicates the operation
 - name indicates the name of the effect
 - duration
+
+#### (g) guery current saved RGBW and HSI values
+As the LD382a doesn't offer bi-directional communications, one can query the server for it's current saved RGBW and HSI values. In FHEM, these values could be used to update e.g. the Wifilight module such as that it reflects the state of the LED controller as set by ld382a.py. The command block is simple enough:
+"[g|G]", where
+- g|G indicates the operation
+The server will respond with a string containing 7 decimal values.
