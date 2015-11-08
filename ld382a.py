@@ -172,6 +172,10 @@ def performTransition(cmdBlock,controller):
 		intEnd   = int(msgBlock.pop(0))
 		timer    = float(msgBlock.pop(0))
 
+	print "Timer: %f" % (timer)
+	if timer == 0.0:
+		# the fastest transition shall be 1/maxFreq
+		timer = float(1/float(maxFreq))
 	
 	# print "Options: CMD: %s, hueStart: %d, satStart: %d, intStart: %d" % (msgBlock,hueStart,satStart,intStart)
 	# print "Options: hueEnd: %d, satEnd: %d, intEnd: %d timer: %d" % (hueEnd,satEnd,intEnd, timer)

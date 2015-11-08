@@ -23,3 +23,4 @@
 
 ## V. 0.2.5
 - added query for current saved RGBW and HSI values
+- fixed possible DIV/0 if transition has 0 duration
