@@ -4,7 +4,7 @@
 #                                           #
 # A simple python program that drives a     #
 # LD382A RGBW LED controller via the H(ue)  #
-# S(aturation) I(ubntensdity) color model   #
+# S(aturation) I(ntensity) color model      #
 #############################################
 #                                           #
 # V. 0.1 - initial version                  #
