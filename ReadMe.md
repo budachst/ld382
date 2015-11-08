@@ -31,3 +31,34 @@ To set a single HSI value on the LD device use this command block:
 - hue in 0 to 360 degrees
 - sat saturation, range from 0 to 100
 - int intensity (of the colors), range from 0 to 100
+
+#### (r) perform single RGBW set
+To set a single RGBW value on the LD device use this command block:
+"[r|R],red, green, blue, white" where
+- r|R indicates the operation
+- red in range from 0 to 255
+- green in range from 0 to 255
+- blue in range from 0 to 255
+- white in range from 0 to 255
+
+This command enables the maximum amount of brightness, one get get from the device, as it enables to set all LEDs at once to full brightness. However, the resulting 'white' might not look the way, one would expect.
+
+#### (t) perform a transition
+There are two ways to define how a transistion in the HSI space should be performed. One variant used two HSI value sets plus a duration value while the other only uses one HSI value set plus a duration value. So there two possible invokations for the command block:
+"[t|T],hue, sat, int, hue',sat',int', duration" where
+- t|T indicates the operation
+- hue at start of transition in range from 0 to 359 degrees
+- sat at start of transition in range from 0 to 100
+- int at start of transition in range from 0 to 100
+- hue' at end of transition in range from 0 to 359 degrees
+- sat' at end of transition in range from 0 to 100
+- int' at end of transition in range from 0 to 100
+- duration transition time in seconds
+
+The short variant utilizes the last saved values inside the server process and thus only indicates the target values and the duration of the transition:
+"[t|T],hue, sat, int, duration" where
+- t|T indicates the operation
+- hue at end of transition in range from 0 to 359 degrees
+- sat at end of transition in range from 0 to 100
+- int at end of transition in range from 0 to 100
+- duration transition time in seconds
