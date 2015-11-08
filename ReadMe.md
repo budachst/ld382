@@ -17,7 +17,7 @@ In server mode, the only mandantory parameter is the IP of the LED controller, t
 In one-shot mode, the are additional parameters, that need to be provided, otherwise the script will terminate and show some help on which params are missing.
 
 ### Functions of ld382a.py
-There are currently four operations, that can be send to the server process. Each command is simply made up of a command block in test format. The four command are:
+There are currently four operations, that can be send to the server process. Each command is simply made up of a command block in text format. The four command are:
 
 (s) perform a single HSI set
 (r) perform a single RGBW set
