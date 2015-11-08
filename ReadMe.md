@@ -12,7 +12,22 @@ ld382a.py has two basic modes: server mode and one-shot mode
 In server mode, a socket will be created on Port 5382, where it will listen for commads that are sent it's way. In one-shot mode, it will simply perform the desired action and then quit
 
 ### Parameters
-In server mode, the only mandantory parameter is the IP of the LED controller, that will be utilized. Proivide the IP by invoking it using -C <IP>.
+In server mode, the only mandantory parameter is the IP of the LED controller, that will be utilized. Proivide the IP by invoking it using -C [IP].
 
 In one-shot mode, the are additional parameters, that need to be provided, otherwise the script will terminate and show some help on which params are missing.
 
+### Functions of ld382a.py
+There are currently four operations, that can be send to the server process. Each command is simply made up of a command block in test format. The four command are:
+
+(s) perform a single HSI set
+(r) perform a single RGBW set
+(t) perform a transition
+(e) run an effect that is built-in into the ld382a.py script
+
+#### (s) perform single HSI set
+To set a single HSI value on the LD device use this command block:
+"[s|S],hue, sat, int" where
+- s|S indicates the operation
+- hue in 0 to 360 degrees
+- sat saturation, range from 0 to 100
+- int intensity (of the colors), range from 0 to 100
