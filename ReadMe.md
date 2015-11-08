@@ -1,4 +1,4 @@
-# ReadeMe.md for ld382a.py
+# ReadMe.md for ld382a.py
 
 ## Introduction
 ld382a.py is a little Python server, that is able to communicate with a LD382A LED device driver. It handles either single set operations for RGBW or HSI based operations, like transitions. It's basic function is to be create as smooth transistions as possible with those devices.
