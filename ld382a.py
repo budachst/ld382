@@ -218,7 +218,10 @@ def effectFire(duration,controller):
 		sleep(float(newDelay))
 		print "Time left: %f" % (float(ts-time.time()))
 ############################################################## 
-def getValues:
+def getValues():
+	msg = "%d,%d,%d,%d,%d,%d,%d" % (lastRed,lastGreen,lastBlue,lastWhite,lastHUE,lastSAT,lastINT)
+	# print "msg: %s" % (msg)
+	clientsock.send(msg)
 ##############################################################
 def decodeCommandblock(data):
 	global transitionActive
@@ -255,10 +258,6 @@ def decodeCommandblock(data):
 		 print "Effect 'Fire' selected"
 		 effectFire(msgDuration, dreamyLightController)			
 
-	# check for get request
-	if msgCMD == "g" or msgCMD == "G":
-		# return current saved values for RGBW and HSI
-				
 	transitionActive = False
 	# close socket to LED controller
 	dreamyLightController.close()
@@ -317,6 +316,12 @@ else:
 				# clamp transitionSlotsLeft to 0 <> transitionMaxSlots - 1
 				transitionSlotsLeft = max(min(transitionSlotsLeft,(transitionMaxSlots-1)),0)
 				if data:
+					#parse command early to catch 'g' request, before the socket closes
+					msgBlock=data.split( ',' )
+					msgCMD=msgBlock.pop(0)
+					if msgCMD == "g" or msgCMD == "G":
+						# return current saved values for RGBW and HSI
+		 				getValues()
 					s.close()
 					read_list.remove(s)
 		if transitionSlotsLeft > 0 and not transitionActive:
