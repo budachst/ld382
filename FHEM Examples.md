@@ -27,7 +27,7 @@ sub transition($) {
 ```
 This sub can simply be called with the appropriate cmdBlock as the parameter like this:
 
-`transition("s,0,100,0")` to set a HSI set on the device
-`transition("r,0,0,0,0")` to set an RGBW set on the device
-`transition("t,0,100,0,0,100,100,1")` to run a transition from HSI(A) to HSI(B) 
-`transition("t,0,100,100,1")` to run a transition from the last saved internal values to HSI
+- `transition("s,0,100,0")` to set a HSI set on the device
+- `transition("r,0,0,0,0")` to set an RGBW set on the device
+- `transition("t,0,100,0,0,100,100,1")` to run a transition from HSI to H'S'I'
+- `transition("t,0,100,100,1")` to run a transition from the last saved internal values to HSI
