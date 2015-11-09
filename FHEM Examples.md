@@ -61,4 +61,4 @@ sub getLD382aValues($) {
 }
 ```
 This sub will be called with the name of the Wifilight device. It will query the server process and write the received values into the readings of the provided Wifilight device. It can be called like this:
-- `getLD382aValues("<Name of Wifilight>")
+- `getLD382aValues("<Name of Wifilight>")`
