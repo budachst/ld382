@@ -62,3 +62,42 @@ sub getLD382aValues($) {
 ```
 This sub will be called with the name of the Wifilight device. It will query the server process and write the received values into the readings of the provided Wifilight device. It can be called like this:
 - `getLD382aValues("<Name of Wifilight>")`
+
+## Run and stop a built-in effect
+Effects are more complex transitions, which are computed and performed on demand and are of a cyclic nature (well, most often, anyway). The fireplace simulation is a good example. It performs random, and very brief transitions over a quite narrow range of colors, saturations and intensities. Also, each effect has a duration, which marks the time in seconds this effect should be run. For a better experience the duration should be kept rather small, to ensure that further requests are served in a timely manner. To be able to to run the fireplace simulation actually longer than, say 1 second, we make use of FHEM's InternalTimer command, which will call itself again after the duration specified in the command block. This sub would take care of this:
+
+```perl
+sub dreamyFire(@) {
+  my @params=@_;
+  foreach (@params) {
+    my $duration = $_;
+ 
+    my $cmdBlock = "e,fire,$duration";
+    my ($socket,$client_socket);
+    $socket = new IO::Socket::INET (
+      PeerHost => '127.0.0.1',
+      PeerPort => '5382',
+      Proto => 'tcp',
+    ) or die "ERROR in Socket Creation : $!\n";
+    $socket->send($cmdBlock);
+    $socket->close();
+    InternalTimer(gettimeofday()+$duration,'dreamyFire',$duration, 0);
+  }
+}
+```
+You would call this sub simply like this:
+- `dreamyFire(2);` run the fire effect for two seconds
+
+Now, you surely will want to stop this effect eventually and this little sub will take care of this:
+
+```perl
+sub stopDreamyFire(@) {
+  my @params=@_;
+  foreach (@params) {
+    my $duration = $_;
+    RemoveInternalTimer($duration);
+  }
+}
+```
+Note, that you will need to identify the currently running effect loop, by the duration - 2 in this case - and that you can stop the loop by calling the sub like this:
+- `stopDreamyFire(2);` stops the running InternalTimer command with the "identifier" 2. There is some documentation about the InternalTimer command on the FHEM forums.
