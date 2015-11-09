@@ -172,7 +172,6 @@ def performTransition(cmdBlock,controller):
 		intEnd   = int(msgBlock.pop(0))
 		timer    = float(msgBlock.pop(0))
 
-	print "Timer: %f" % (timer)
 	if timer == 0.0:
 		# the fastest transition shall be 1/maxFreq
 		timer = float(1/float(maxFreq))
