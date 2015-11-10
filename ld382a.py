@@ -68,7 +68,7 @@ def setRGBW(ctrlRed,ctrlGreen,ctrlBlue,ctrlWhite,controller):
 	global lastRed
 	global lastGreen
 	global lastBlue
-	global lastWHite
+	global lastWhite
 	
 	# clamp ranges
 	ctrlRed   = max(min(ctrlRed,   255),0)
