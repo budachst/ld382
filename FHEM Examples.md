@@ -52,12 +52,24 @@ sub getLD382aValues($) {
   # split $answer and set values in wifilight device
   my @array = split(',', $answer);
   # calculate RGB hex value from answer
-  my $hex = sprintf("%02x",$array[0]).sprintf("%02x",$array[1]).sprintf("%02x",$array[2]);
-  # set values of wifilight device
-  fhem("setreading $wifilightDevice RGB $hex");
-  fhem("setreading $wifilightDevice hue $array[4]");
-  fhem("setreading $wifilightDevice saturation $array[5]");
-  fhem("setreading $wifilightDevice brightness $array[6]");
+  my $rgb = sprintf("%02x",$array[0]).sprintf("%02x",$array[1]).sprintf("%02x",$array[2]);
+  my $wht = sprintf("%02x",$array[3]);
+  if ($rgb eq "000000" && $wht ne "00") {
+    $rgb = "$wht$wht$wht";
+  }
+  if ($rgb ne "000000") {
+    # set values of wifilight device
+    fhem("setreading $wifilightDevice RGB $rgb");
+    fhem("setreading $wifilightDevice hue $array[4]");
+    fhem("setreading $wifilightDevice saturation $array[5]");
+    fhem("setreading $wifilightDevice brightness $array[6]");
+    fhem("setreading $wifilightDevice state on");
+    fhem("setstate $wifilightDevice on");
+  } else {
+    fhem("setreading $wifilightDevice RGB $rgb");
+    fhem("setreading $wifilightDevice state off");
+    fhem("setstate $wifilightDevice off");
+  }
 }
 ```
 This sub will be called with the name of the Wifilight device. It will query the server process and write the received values into the readings of the provided Wifilight device. It can be called like this:
