@@ -36,17 +36,18 @@ This sub can simply be called with the appropriate cmdBlock as the parameter lik
 To be able to reflect the current internal state of the values in a Wifilight device, one can query the server process for the current values of its internal RGBW and HSI variables. Again, this would be best suited as a sub in the 99_myUtils.pm:
 
 ```perl
-sub getLD382aValues($) {
-  my ($wifilightDevice) = @_;
+sub getLD382aValuesNew($;$) {
+  my ($wifilightDevice,$sleepTime)=@_;
   my ($socket,$client_socket);
   my $answer;
-
+  my $cmdBlock = "g,$sleepTime";
+  
   $socket = new IO::Socket::INET (
     PeerHost => '127.0.0.1',
     PeerPort => '5382',
     Proto => 'tcp',
   ) or die "ERROR in Socket Creation : $!\n";
-  $socket->send("g");
+  $socket->send("$cmdBlock");
   $answer=<$socket>;
   $socket->close();
   # split $answer and set values in wifilight device
@@ -71,9 +72,10 @@ sub getLD382aValues($) {
     fhem("setstate $wifilightDevice off");
   }
 }
+
 ```
-This sub will be called with the name of the Wifilight device. It will query the server process and write the received values into the readings of the provided Wifilight device. It can be called like this:
-- `getLD382aValues("<Name of Wifilight>")`
+This sub will be called with the name of the Wifilight device and or an additonal sleepTime of up to 10 seconds. It will query the server process and write the received values into the readings of the provided Wifilight device. It can be called like this:
+- `getLD382aValues("<Name of Wifilight>"[,sleeptime])`
 
 ## Run and stop a built-in effect
 Effects are more complex transitions, which are computed and performed on demand and are of a cyclic nature (well, most often, anyway). The fireplace simulation is a good example. It performs random, and very brief transitions over a quite narrow range of colors, saturations and intensities. Also, each effect has a duration, which marks the time in seconds this effect should be run. For a better experience the duration should be kept rather small, to ensure that further requests are served in a timely manner. To be able to to run the fireplace simulation actually longer than, say 1 second, we make use of FHEM's InternalTimer command, which will call itself again after the duration specified in the command block. This sub would take care of this:
