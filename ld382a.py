@@ -221,7 +221,8 @@ def effectFire(duration,controller):
 		sleep(float(newDelay))
 		print "Time left: %f" % (float(ts-time.time()))
 ############################################################## 
-def getValues():
+def getValues(sleepTime):
+	sleep(int(sleepTime))
 	msg = "%d,%d,%d,%d,%d,%d,%d" % (lastRed,lastGreen,lastBlue,lastWhite,lastHUE,lastSAT,lastINT)
 	# print "msg: %s" % (msg)
 	clientsock.send(msg)
@@ -323,8 +324,16 @@ else:
 					msgBlock=data.split( ',' )
 					msgCMD=msgBlock.pop(0)
 					if msgCMD == "g" or msgCMD == "G":
+						# get sleep time if provided
+						try:
+							msgSleep=int(msgBlock.pop(0))
+						except:
+							msgSleep = 2
+						# make sure sleep time doesn't exceed 10s
+						max(min(msgSleep,10),0)
+					
 						# return current saved values for RGBW and HSI
-		 				getValues()
+		 				getValues(msgSleep)
 					s.close()
 					read_list.remove(s)
 		if transitionSlotsLeft > 0 and not transitionActive:
