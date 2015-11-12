@@ -24,3 +24,5 @@
 ## V. 0.2.5
 - added query for current saved RGBW and HSI values
 - fixed possible DIV/0 if transition has 0 duration
+- added 'g|G' command block for querying internal RGBW and HSI values
+- modified 'g|G' to support an additional parameter used as the sleep time
