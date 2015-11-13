@@ -7,7 +7,7 @@
 # S(aturation) I(ntensity) color model      #
 #############################################
 #                                           #
-# V. 0.2.5                                  #
+# V. 0.2.6                                  #
 #############################################
 
 import binascii
@@ -43,6 +43,7 @@ PORT = 5382
 BUFSIZ = 64
 ADDR = (HOST, PORT)
 transitionActive = False
+statusCommand = False
 transitionRingbuffer = []
 transitionCurrentSlot = 0
 transitionNextSlot = 0
@@ -313,17 +314,15 @@ else:
 				print "Connection from", addr
 			else:
 				data = s.recv(BUFSIZ).rstrip()
-				print "received: %s -> Slot %d" % (data,transitionNextSlot)
-				transitionRingbuffer.insert(transitionNextSlot,data)
-				transitionNextSlot = (transitionNextSlot + 1) % transitionMaxSlots
-				transitionSlotsLeft = transitionSlotsLeft + 1
-				# clamp transitionSlotsLeft to 0 <> transitionMaxSlots - 1
-				transitionSlotsLeft = max(min(transitionSlotsLeft,(transitionMaxSlots-1)),0)
 				if data:
-					#parse command early to catch 'g' request, before the socket closes
+					statusCommand = False
+					# first check if the current command is a status command
+					# status command musn't be placed in the ringbuffer
 					msgBlock=data.split( ',' )
 					msgCMD=msgBlock.pop(0)
 					if msgCMD == "g" or msgCMD == "G":
+						statusCommand = True
+						print "status command received: %s" % (data)
 						# get sleep time if provided
 						try:
 							msgSleep=int(msgBlock.pop(0))
@@ -336,6 +335,13 @@ else:
 		 				getValues(msgSleep)
 					s.close()
 					read_list.remove(s)
+					if statusCommand == False:
+						print "action command received: %s -> Slot %d" % (data,transitionNextSlot)
+						transitionRingbuffer.insert(transitionNextSlot,data)
+						transitionNextSlot = (transitionNextSlot + 1) % transitionMaxSlots
+						transitionSlotsLeft = transitionSlotsLeft + 1
+						# clamp transitionSlotsLeft to 0 <> transitionMaxSlots - 1
+						transitionSlotsLeft = max(min(transitionSlotsLeft,(transitionMaxSlots-1)),0)
 		if transitionSlotsLeft > 0 and not transitionActive:
 			thread.start_new_thread(decodeCommandblock, (transitionRingbuffer[transitionCurrentSlot],))
 			transitionSlotsLeft = transitionSlotsLeft - 1
