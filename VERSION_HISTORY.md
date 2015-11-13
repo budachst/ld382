@@ -26,3 +26,6 @@
 - fixed possible DIV/0 if transition has 0 duration
 - added 'g|G' command block for querying internal RGBW and HSI values
 - modified 'g|G' to support an additional parameter used as the sleep time
+
+## V. 0.2.6
+- decoupled status commands from action commands and made sure, that status commands are not put into the ring buffer, since these can cause long-running transistions to break
