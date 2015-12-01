@@ -29,3 +29,6 @@
 
 ## V. 0.2.6
 - decoupled status commands from action commands and made sure, that status commands are not put into the ring buffer, since these can cause long-running transistions to break
+
+## V. 0.2.7
+- added ability to transition function to cope with off/Off and on/On for 0/100 values, if provided
