@@ -7,7 +7,7 @@
 # S(aturation) I(ntensity) color model      #
 #############################################
 #                                           #
-# V. 0.2.6                                  #
+# V. 0.2.7                                  #
 #############################################
 
 import binascii
@@ -161,7 +161,12 @@ def performTransition(cmdBlock,controller):
 		intStart = int(msgBlock.pop(0))
 		hueEnd   = int(msgBlock.pop(0))
 		satEnd   = int(msgBlock.pop(0))
-		intEnd   = int(msgBlock.pop(0))
+		tmpEnd   = msgBlock.pop(0)
+		if tmpEnd == "off" or tmpEnd == "Off":
+			tmpEnd = int(0)
+		if tmpEnd == "on" or tmpEnd == "On":
+			tmpEnd = int(100)
+		intEnd   = int(tmpEnd)
 		timer    = float(msgBlock.pop(0))
 	if len(msgBlock) == 4:
 		# transition from previous state requested, get and convert target values from list
@@ -170,7 +175,12 @@ def performTransition(cmdBlock,controller):
 		intStart = int(lastINT)
 		hueEnd   = int(msgBlock.pop(0))
 		satEnd   = int(msgBlock.pop(0))
-		intEnd   = int(msgBlock.pop(0))
+		tmpEnd   = msgBlock.pop(0)
+		if tmpEnd == "off" or tmpEnd == "Off":
+			tmpEnd = int(0)
+		if tmpEnd == "on" or tmpEnd == "On":
+			tmpEnd = int(100)
+		intEnd   = int(tmpEnd)
 		timer    = float(msgBlock.pop(0))
 
 	if timer == 0.0:
@@ -222,11 +232,14 @@ def effectFire(duration,controller):
 		sleep(float(newDelay))
 		print "Time left: %f" % (float(ts-time.time()))
 ############################################################## 
-def getValues(sleepTime):
+def getValues(sleepTime,clientSocket):
+	global read_list
 	sleep(int(sleepTime))
 	msg = "%d,%d,%d,%d,%d,%d,%d" % (lastRed,lastGreen,lastBlue,lastWhite,lastHUE,lastSAT,lastINT)
 	# print "msg: %s" % (msg)
 	clientsock.send(msg)
+	clientSocket.close()
+	read_list.remove(clientSocket)
 ##############################################################
 def decodeCommandblock(data):
 	global transitionActive
@@ -332,9 +345,8 @@ else:
 						max(min(msgSleep,10),0)
 					
 						# return current saved values for RGBW and HSI
-		 				getValues(msgSleep)
-					s.close()
-					read_list.remove(s)
+		 				getValues(msgSleep,s)
+
 					if statusCommand == False:
 						print "action command received: %s -> Slot %d" % (data,transitionNextSlot)
 						transitionRingbuffer.insert(transitionNextSlot,data)
@@ -342,6 +354,8 @@ else:
 						transitionSlotsLeft = transitionSlotsLeft + 1
 						# clamp transitionSlotsLeft to 0 <> transitionMaxSlots - 1
 						transitionSlotsLeft = max(min(transitionSlotsLeft,(transitionMaxSlots-1)),0)
+						s.close()
+						read_list.remove(s)
 		if transitionSlotsLeft > 0 and not transitionActive:
 			thread.start_new_thread(decodeCommandblock, (transitionRingbuffer[transitionCurrentSlot],))
 			transitionSlotsLeft = transitionSlotsLeft - 1
