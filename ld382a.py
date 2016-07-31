@@ -7,7 +7,7 @@
 # S(aturation) I(ntensity) color model      #
 #############################################
 #                                           #
-# V. 0.2.7                                  #
+# V. 0.2.8                                  #
 #############################################
 
 import binascii
@@ -24,6 +24,7 @@ import thread
 import os
 import select
 import random
+import syslog
 
 from sys import argv
 from time import sleep
@@ -281,6 +282,7 @@ def decodeCommandblock(data):
 	dreamyLightController.close()
 ##############################################################
 ### MAIN starts here ###
+
 # parse command line arguments
 # these arguments are needed
 # hue, stat(uration), int(ensity), contr(oller)
@@ -296,6 +298,9 @@ if args['HUE']: HUE = int(args['HUE'])
 if args['SAT']: SAT = int(args['SAT'])
 if args['INT']: INT = int(args['INT'])
 
+# set up syslogging
+syslog.openlog("ld382a_%s" % (addrLD382A))
+syslog.syslog('daemon starting')
 
 # if parameters have been provided, run in one-shot mode as
 # client and terminate
@@ -324,7 +329,8 @@ else:
 			if s is serversock:
 				clientsock, addr = serversock.accept()
 				read_list.append(clientsock)
-				print "Connection from", addr
+				# print "Connection from", addr
+				syslog.syslog("connection from %s" % (str(addr)))
 			else:
 				data = s.recv(BUFSIZ).rstrip()
 				if data:
@@ -335,7 +341,8 @@ else:
 					msgCMD=msgBlock.pop(0)
 					if msgCMD == "g" or msgCMD == "G":
 						statusCommand = True
-						print "status command received: %s" % (data)
+						# print "status command received: %s" % (data)
+						syslog.syslog("status command received: %s" % (data))
 						# get sleep time if provided
 						try:
 							msgSleep=int(msgBlock.pop(0))
@@ -348,7 +355,8 @@ else:
 		 				getValues(msgSleep,s)
 
 					if statusCommand == False:
-						print "action command received: %s -> Slot %d" % (data,transitionNextSlot)
+						# print "action command received: %s -> Slot %d" % (data,transitionNextSlot)
+						syslog.syslog("action command received: %s -> Slot %d" % (data,transitionNextSlot))
 						transitionRingbuffer.insert(transitionNextSlot,data)
 						transitionNextSlot = (transitionNextSlot + 1) % transitionMaxSlots
 						transitionSlotsLeft = transitionSlotsLeft + 1
@@ -359,7 +367,8 @@ else:
 		if transitionSlotsLeft > 0 and not transitionActive:
 			thread.start_new_thread(decodeCommandblock, (transitionRingbuffer[transitionCurrentSlot],))
 			transitionSlotsLeft = transitionSlotsLeft - 1
-			print "played: %s Slot: %d, remaining: %d" % (transitionRingbuffer[transitionCurrentSlot],transitionCurrentSlot,transitionSlotsLeft)
+			#print "played: %s Slot: %d, remaining: %d" % (transitionRingbuffer[transitionCurrentSlot],transitionCurrentSlot,transitionSlotsLeft)
+			syslog.syslog("played: %s Slot: %d, remaining: %d" % (transitionRingbuffer[transitionCurrentSlot],transitionCurrentSlot,transitionSlotsLeft))
 			transitionCurrentSlot = (transitionCurrentSlot + 1) % transitionMaxSlots
 			# clamp transitionSlotsLeft to 0 <> transitionMaxSlots - 1
 			transitionSlotsLeft = max(min(transitionSlotsLeft, (transitionMaxSlots-1)),0)
