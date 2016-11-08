@@ -244,7 +244,6 @@ def getValues(sleepTime,clientSocket):
 ##############################################################
 def decodeCommandblock(data):
 	global transitionActive
-	transitionActive = True
 	#parse command
 	msgBlock=data.split( ',' )
 	msgCMD=msgBlock.pop(0)
@@ -365,6 +364,8 @@ else:
 						s.close()
 						read_list.remove(s)
 		if transitionSlotsLeft > 0 and not transitionActive:
+			# prohibit race-condition and set transitionActive-state in the main loop
+			transitionActive = True
 			thread.start_new_thread(decodeCommandblock, (transitionRingbuffer[transitionCurrentSlot],))
 			transitionSlotsLeft = transitionSlotsLeft - 1
 			#print "played: %s Slot: %d, remaining: %d" % (transitionRingbuffer[transitionCurrentSlot],transitionCurrentSlot,transitionSlotsLeft)
