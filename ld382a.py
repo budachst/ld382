@@ -313,6 +313,7 @@ if HUE and SAT and INT and addrLD382A:
 else:
 	# open socket for incoming connections and run in server mode
 	serversock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	serversock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
 	serversock.bind(ADDR)
 	serversock.listen(2)
 	read_list = [serversock]
