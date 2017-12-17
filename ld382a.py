@@ -7,7 +7,7 @@
 # S(aturation) I(ntensity) color model      #
 #############################################
 #                                           #
-# V. 0.2.8                                  #
+# V. 0.2.9                                  #
 #############################################
 
 import binascii
@@ -308,7 +308,7 @@ if HUE and SAT and INT and addrLD382A:
 	dreamyLightController = setupSocket(addrLD382A,portLD372A)
 	hsi2rgbw(HUE,SAT,INT,dreamyLightController)
 	# close socket to LED controller
-	dreamyLightDachboden.close()
+	dreamyLightController.close()
 
 else:
 	# open socket for incoming connections and run in server mode
@@ -319,7 +319,7 @@ else:
 	read_list = [serversock]
 	
 	#open socket to LED controller
-	#dreamyLightDachboden = setupSocket(addrLD382A,portLD372A)
+	#dreamyLightController = setupSocket(addrLD382A,portLD372A)
 
 	# enter loop
 	while True:
@@ -376,7 +376,7 @@ else:
 			transitionSlotsLeft = max(min(transitionSlotsLeft, (transitionMaxSlots-1)),0)
 
 # close socket to LED controller
-dreamyLightDachboden.close()
+dreamyLightController.close()
 
 
 

@@ -32,3 +32,9 @@
 
 ## V. 0.2.7
 - added ability to transition function to cope with off/Off and on/On for 0/100 values, if provided
+
+## V. 0.2.8
+- removed some race-conditions
+
+## V. 0.2.9
+- changed some remnants of renaming the controller object, which were overlooked, but caused no harm.
