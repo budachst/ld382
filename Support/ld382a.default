@@ -3,3 +3,6 @@
 
 # IP address of the LD382A LED controller
 LD382A_CTRL_IP=192.168.188.244
+
+# Path to the venv containing the python3 interpreter to run ld382a.py with
+LD382A_VENV=/opt/ld382a/venv

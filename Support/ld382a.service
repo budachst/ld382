@@ -1,6 +1,8 @@
 # systemd unit for ld382a.py (LED-Controller-Server for LD382A)
 #
 # Install:
+#   sudo python3 -m venv /opt/ld382a/venv
+#   sudo cp ld382a.py /usr/local/bin/ld382a.py
 #   sudo cp ld382a.service /etc/systemd/system/
 #   sudo cp ld382a.default /etc/default/ld382a
 #   sudo systemctl daemon-reload
@@ -20,7 +22,10 @@ Wants=network-online.target
 [Service]
 Type=simple
 EnvironmentFile=-/etc/default/ld382a
-ExecStart=/usr/bin/python3 /usr/local/bin/ld382a.py -C ${LD382A_CTRL_IP}
+# ExecStart uses the venv's own interpreter directly rather than
+# "activating" it - activation only rewrites PATH for a shell, which
+# systemd doesn't use, so this is the correct way to run inside a venv.
+ExecStart=${LD382A_VENV}/bin/python3 /usr/local/bin/ld382a.py -C ${LD382A_CTRL_IP}
 Restart=on-failure
 RestartSec=3
 
