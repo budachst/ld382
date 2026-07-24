@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #############################################
 # ld382a.py                                 #
 #                                           #
@@ -20,7 +20,7 @@ import sys,getopt
 import time
 import argparse
 import threading
-import thread
+import _thread
 import os
 import select
 import random
@@ -57,6 +57,7 @@ lastWhite = 0;
 lastHUE = 0;
 lastSAT = 0;
 lastINT = 0;
+stateLock = threading.Lock()
 
 ##############################################################
 def setupSocket(address,port):
@@ -86,10 +87,11 @@ def setRGBW(ctrlRed,ctrlGreen,ctrlBlue,ctrlWhite,controller):
 	packed_data = packer.pack(*values)
 	controller.sendall(packed_data)
 	# save latest RGBW in global vars for reuse
-	lastRed = ctrlRed
-	lastGreen = ctrlGreen
-	lastBlue = ctrlBlue
-	lastWhite = ctrlWhite
+	with stateLock:
+		lastRed = ctrlRed
+		lastGreen = ctrlGreen
+		lastBlue = ctrlBlue
+		lastWhite = ctrlWhite
 ##############################################################
 def hsi2rgbw(H,S,I,controller):
 	global lastHUE
@@ -97,9 +99,10 @@ def hsi2rgbw(H,S,I,controller):
 	global lastINT
 	
 	# save latest HSI values in global vars
-	lastHUE = H
-	lastSAT = S
-	lastINT = I
+	with stateLock:
+		lastHUE = H
+		lastSAT = S
+		lastINT = I
 
 	r = 0
 	g = 0
@@ -226,59 +229,66 @@ def effectFire(duration,controller):
 		newDelay = round(random.uniform(0.05, 0.3), 5)
 		# if newDelay exceeds ts, then cap it
 		if (time.time() + newDelay) > ts:
-			print "newDelay capped, break..!"
+			print("newDelay capped, break..!")
 			break
 		newMsgBlock = "t,%d,%d,%d,%d,%d,%d,%f" % (lastHUE,lastSAT,lastINT,newHUE,newSAT,newINT,newDelay)
 		performTransition(newMsgBlock,controller)
 		sleep(float(newDelay))
-		print "Time left: %f" % (float(ts-time.time()))
+		print("Time left: %f" % (float(ts-time.time())))
 ############################################################## 
 def getValues(sleepTime,clientSocket):
 	global read_list
 	sleep(int(sleepTime))
-	msg = "%d,%d,%d,%d,%d,%d,%d" % (lastRed,lastGreen,lastBlue,lastWhite,lastHUE,lastSAT,lastINT)
+	with stateLock:
+		msg = "%d,%d,%d,%d,%d,%d,%d" % (lastRed,lastGreen,lastBlue,lastWhite,lastHUE,lastSAT,lastINT)
 	# print "msg: %s" % (msg)
-	clientsock.send(msg)
+	clientSocket.send(msg.encode())
 	clientSocket.close()
 	read_list.remove(clientSocket)
 ##############################################################
 def decodeCommandblock(data):
 	global transitionActive
-	#parse command
-	msgBlock=data.split( ',' )
-	msgCMD=msgBlock.pop(0)
-	#open socket to LED controller
-	dreamyLightController = setupSocket(addrLD382A,portLD372A)
+	dreamyLightController = None
+	try:
+		#parse command
+		msgBlock=data.split( ',' )
+		msgCMD=msgBlock.pop(0)
+		#open socket to LED controller
+		dreamyLightController = setupSocket(addrLD382A,portLD372A)
 
-	# check for single value set
-	if msgCMD == "s" or msgCMD == "S":
-		# HSI direct set requested, just call HSI conversion
-		# command block: "[s|S],hue,sat,intensity"
-		hsi2rgbw(int(msgBlock.pop(0)),int(msgBlock.pop(0)),int(msgBlock.pop(0)),dreamyLightController)
-	if msgCMD == "r" or msgCMD == "R":
-		# RGBW direct set requested, just call HSI conversion
-		# command block; "[r|R],red,green,blue,white"
-		setRGBW(int(msgBlock.pop(0)),int(msgBlock.pop(0)),int(msgBlock.pop(0)),int(msgBlock.pop(0)),dreamyLightController)
-	
-	# check for transition sets
-	if msgCMD == "t" or msgCMD == "T":
-		# simple transition from HSI to H'S'I'
-		# command block: "t,hue,sat,int,hue',sat',int',duration"
-		performTransition(data,dreamyLightController)
-	# check for effect sets
-	if msgCMD == "e" or msgCMD == "E":
-		# select effect to run
-		# command block: "[e|E],effect,duration"
-		msgEffect=msgBlock.pop(0)
-		msgDuration=msgBlock.pop(0)
-		# run fire effect proc
-		if msgEffect == "fire" or msgEffect == "Fire":
-		 print "Effect 'Fire' selected"
-		 effectFire(msgDuration, dreamyLightController)			
+		# check for single value set
+		if msgCMD == "s" or msgCMD == "S":
+			# HSI direct set requested, just call HSI conversion
+			# command block: "[s|S],hue,sat,intensity"
+			hsi2rgbw(int(msgBlock.pop(0)),int(msgBlock.pop(0)),int(msgBlock.pop(0)),dreamyLightController)
+		if msgCMD == "r" or msgCMD == "R":
+			# RGBW direct set requested, just call HSI conversion
+			# command block; "[r|R],red,green,blue,white"
+			setRGBW(int(msgBlock.pop(0)),int(msgBlock.pop(0)),int(msgBlock.pop(0)),int(msgBlock.pop(0)),dreamyLightController)
 
-	transitionActive = False
-	# close socket to LED controller
-	dreamyLightController.close()
+		# check for transition sets
+		if msgCMD == "t" or msgCMD == "T":
+			# simple transition from HSI to H'S'I'
+			# command block: "t,hue,sat,int,hue',sat',int',duration"
+			performTransition(data,dreamyLightController)
+		# check for effect sets
+		if msgCMD == "e" or msgCMD == "E":
+			# select effect to run
+			# command block: "[e|E],effect,duration"
+			msgEffect=msgBlock.pop(0)
+			msgDuration=msgBlock.pop(0)
+			# run fire effect proc
+			if msgEffect == "fire" or msgEffect == "Fire":
+				print("Effect 'Fire' selected")
+				effectFire(msgDuration, dreamyLightController)
+	except Exception as e:
+		# don't let a bad command or an unreachable controller wedge the daemon
+		syslog.syslog(syslog.LOG_ERR, "decodeCommandblock failed for '%s': %s" % (data, str(e)))
+	finally:
+		# close socket to LED controller, if it was opened
+		if dreamyLightController is not None:
+			dreamyLightController.close()
+		transitionActive = False
 ##############################################################
 ### MAIN starts here ###
 
@@ -332,7 +342,7 @@ else:
 				# print "Connection from", addr
 				syslog.syslog("connection from %s" % (str(addr)))
 			else:
-				data = s.recv(BUFSIZ).rstrip()
+				data = s.recv(BUFSIZ).decode().rstrip()
 				if data:
 					statusCommand = False
 					# first check if the current command is a status command
@@ -349,10 +359,10 @@ else:
 						except:
 							msgSleep = 2
 						# make sure sleep time doesn't exceed 10s
-						max(min(msgSleep,10),0)
+						msgSleep = max(min(msgSleep,10),0)
 					
 						# return current saved values for RGBW and HSI
-		 				getValues(msgSleep,s)
+						getValues(msgSleep,s)
 
 					if statusCommand == False:
 						# print "action command received: %s -> Slot %d" % (data,transitionNextSlot)
@@ -367,7 +377,7 @@ else:
 		if transitionSlotsLeft > 0 and not transitionActive:
 			# prohibit race-condition and set transitionActive-state in the main loop
 			transitionActive = True
-			thread.start_new_thread(decodeCommandblock, (transitionRingbuffer[transitionCurrentSlot],))
+			_thread.start_new_thread(decodeCommandblock, (transitionRingbuffer[transitionCurrentSlot],))
 			transitionSlotsLeft = transitionSlotsLeft - 1
 			#print "played: %s Slot: %d, remaining: %d" % (transitionRingbuffer[transitionCurrentSlot],transitionCurrentSlot,transitionSlotsLeft)
 			syslog.syslog("played: %s Slot: %d, remaining: %d" % (transitionRingbuffer[transitionCurrentSlot],transitionCurrentSlot,transitionSlotsLeft))
