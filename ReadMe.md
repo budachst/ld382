@@ -7,6 +7,9 @@ Originally, it has been written to be a companion for a FHEM server, but it can 
 
 Additionally, to performing simple transitions, it has the ability to create more complex effects, like a fireplace effect.
 
+## Requirements
+ld382a.py requires Python 3.
+
 ## How to use
 ld382a.py has two basic modes: server mode and one-shot mode
 In server mode, a socket will be created on Port 5382, where it will listen for commads that are sent it's way. In one-shot mode, it will simply perform the desired action and then quit
