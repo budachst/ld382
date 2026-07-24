@@ -1,0 +1,28 @@
+# systemd unit for ld382a.py (LED-Controller-Server for LD382A)
+#
+# Install:
+#   sudo cp ld382a.service /etc/systemd/system/
+#   sudo cp ld382a.default /etc/default/ld382a
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now ld382a
+#
+# Start/stop/status:
+#   sudo systemctl start ld382a
+#   sudo systemctl stop ld382a
+#   sudo systemctl status ld382a
+#   journalctl -u ld382a -f
+
+[Unit]
+Description=LED-Controller-Server for LD382A
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=-/etc/default/ld382a
+ExecStart=/usr/bin/python3 /usr/local/bin/ld382a.py -C ${LD382A_CTRL_IP}
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,5 @@
+# Configuration for the ld382a systemd service.
+# Install as /etc/default/ld382a
+
+# IP address of the LD382A LED controller
+LD382A_CTRL_IP=192.168.188.244
